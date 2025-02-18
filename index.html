@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMIT Analysis Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        .fingerprint-scanner {
+            background: linear-gradient(145deg, #e6e6e6, #ffffff);
+            box-shadow: 20px 20px 60px #d1d1d1, -20px -20px 60px #ffffff;
+        }
+        .loading {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-sm">
+            <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="text-2xl font-bold text-blue-600">DMIT Analysis</div>
+                <div class="flex gap-4">
+                    <button id="newAssessmentBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">New Assessment</button>
+                    <button id="profileBtn" class="text-gray-600 hover:text-blue-600 transition">
+                        <i class="bi bi-person-circle text-2xl"></i>
+                    </button>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-4 py-8">
+            <div id="assessment-form" class="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-6">
+                <!-- Steps Progress -->
+                <div class="flex justify-between mb-8">
+                    <div class="flex items-center">
+                        <div id="step1-indicator" class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center">1</div>
+                        <div class="ml-2">Personal Info</div>
+                    </div>
+                    <div class="flex items-center">
+                        <div id="step2-indicator" class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">2</div>
+                        <div class="ml-2">Fingerprint Scan</div>
+                    </div>
+                    <div class="flex items-center">
+                        <div id="step3-indicator" class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">3</div>
+                        <div class="ml-2">Report</div>
+                    </div>
+                </div>
+
+                <!-- Step 1: Personal Information -->
+                <div id="step1" class="space-y-6">
+                    <h2 class="text-xl font-semibold">Personal Information</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                            <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" id="fullName">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Age</label>
+                            <input type="number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" id="age">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Gender</label>
+                            <select class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" id="gender">
+                                <option value="">Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Grade/Class</label>
+                            <input type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" id="grade">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Fingerprint Scan -->
+                <div id="step2" class="hidden space-y-6">
+                    <h2 class="text-xl font-semibold">Fingerprint Scan</h2>
+                    <div class="flex flex-col items-center">
+                        <div class="fingerprint-scanner w-64 h-64 rounded-lg flex items-center justify-center mb-4">
+                            <i class="bi bi-fingerprint text-6xl text-gray-400"></i>
+                        </div>
+                        <p class="text-sm text-gray-600 text-center mb-4">Place your right thumb on the scanner</p>
+                        <button id="scanBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Start Scan</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Report -->
+                <div id="step3" class="hidden space-y-6">
+                    <h2 class="text-xl font-semibold">DMIT Analysis Report</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Intelligence Chart -->
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <h3 class="text-lg font-medium mb-4">Multiple Intelligence Profile</h3>
+                            <canvas id="intelligenceChart"></canvas>
+                        </div>
+                        <!-- Personality Traits -->
+                        <div class="bg-white p-4 rounded-lg shadow">
+                            <h3 class="text-lg font-medium mb-4">Personality Traits</h3>
+                            <canvas id="personalityChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <h3 class="text-lg font-medium mb-4">Career Recommendations</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="careerRecommendations">
+                            <!-- Career recommendations will be populated here -->
+                        </div>
+                    </div>
+                    <div class="flex justify-end mt-6">
+                        <button id="downloadReport" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+                            Download Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between mt-8">
+                    <button id="prevBtn" class="hidden bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition">Previous</button>
+                    <button id="nextBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Next</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        // Initialize Charts
+        function initializeCharts() {
+            // Intelligence Chart
+            const intelligenceCtx = document.getElementById('intelligenceChart').getContext('2d');
+            new Chart(intelligenceCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Linguistic', 'Logical', 'Spatial', 'Musical', 'Bodily', 'Interpersonal', 'Intrapersonal', 'Naturalistic'],
+                    datasets: [{
+                        label: 'Intelligence Score',
+                        data: [85, 92, 78, 65, 88, 95, 70, 82],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Personality Chart
+            const personalityCtx = document.getElementById('personalityChart').getContext('2d');
+            new Chart(personalityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Extroversion', 'Openness', 'Agreeableness', 'Conscientiousness', 'Emotional Stability'],
+                    datasets: [{
+                        label: 'Personality Traits',
+                        data: [75, 85, 90, 70, 80],
+                        backgroundColor: 'rgba(59, 130, 246, 0.6)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Navigation Functions
+        function updateStep(direction) {
+            const currentStepElement = document.getElementById(`step${currentStep}`);
+            const currentIndicator = document.getElementById(`step${currentStep}-indicator`);
+            
+            if (direction === 'next' && currentStep < totalSteps) {
+                currentStep++;
+            } else if (direction === 'prev' && currentStep > 1) {
+                currentStep--;
+            }
+
+            const nextStepElement = document.getElementById(`step${currentStep}`);
+            const nextIndicator = document.getElementById(`step${currentStep}-indicator`);
+
+            // Update visibility
+            document.querySelectorAll('[id^="step"]').forEach(el => el.classList.add('hidden'));
+            nextStepElement.classList.remove('hidden');
+
+            // Update indicators
+            document.querySelectorAll('[id$="-indicator"]').forEach(el => {
+                el.classList.remove('bg-blue-600', 'text-white');
+                el.classList.add('bg-gray-200', 'text-gray-600');
+            });
+            nextIndicator.classList.remove('bg-gray-200', 'text-gray-600');
+            nextIndicator.classList.add('bg-blue-600', 'text-white');
+
+            // Update buttons
+            document.getElementById('prevBtn').style.display = currentStep === 1 ? 'none' : 'block';
+            document.getElementById('nextBtn').textContent = currentStep === totalSteps ? 'Finish' : 'Next';
+
+            if (currentStep === 3) {
+                initializeCharts();
+                populateCareerRecommendations();
+            }
+        }
+
+        // Fingerprint Scanning Simulation
+        document.getElementById('scanBtn').addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<i class="bi bi-arrow-repeat"></i> Scanning...';
+            this.classList.add('loading');
+            
+            setTimeout(() => {
+                this.disabled = false;
+                this.innerHTML = 'Scan Complete';
+                this.classList.remove('loading');
+                document.getElementById('nextBtn').disabled = false;
+            }, 3000);
+        });
+
+        // Career Recommendations
+        function populateCareerRecommendations() {
+            const careers = [
+                { title: 'Software Developer', match: '95%', icon: 'bi-laptop' },
+                { title: 'Data Scientist', match: '90%', icon: 'bi-graph-up' },
+                { title: 'UX Designer', match: '85%', icon: 'bi-palette' }
+            ];
+
+            const container = document.getElementById('careerRecommendations');
+            container.innerHTML = careers.map(career => `
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="bi ${career.icon} text-2xl text-blue-600 mr-3"></i>
+                            <div>
+                                <div class="font-medium">${career.title}</div>
+                                <div class="text-sm text-gray-600">Match: ${career.match}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Event Listeners
+        document.getElementById('nextBtn').addEventListener('click', () => updateStep('next'));
+        document.getElementById('prevBtn').addEventListener('click', () => updateStep('prev'));
+        document.getElementById('downloadReport').addEventListener('click', () => {
+            alert('Downloading PDF Report...');
+        });
+
+        // Initialize Step 1
+        updateStep('current');
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
